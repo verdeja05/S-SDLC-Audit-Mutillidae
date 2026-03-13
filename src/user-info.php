@@ -41,6 +41,14 @@
 		}// end if
 		
 		if ($lFormSubmitted){
+
+			
+			if ($_SESSION["security-level"] >= 2) {
+				if (!isset($_POST["csrf_token"]) || $_POST["csrf_token"] !== $_SESSION["csrf_token"]) {
+					die("CSRF Attack Detected! Action Blocked for Security.");
+				}
+			}
+
     		if ($lProtectAgainstMethodTampering) {
    				$lUserInfoSubmitButton = $_POST["user-info-php-submit-button"];
 				$lUsername = $_POST["username"];
@@ -95,25 +103,13 @@
 <?php include_once __SITE_ROOT__.'/includes/back-button.inc';?>
 <?php include_once __SITE_ROOT__.'/includes/hints/hints-menu-wrapper.inc'; ?>
 
-<span>
-	<a style="text-decoration: none; cursor: pointer;" href="./webservices/soap/ws-user-account.php">
-		<img style="vertical-align: middle;" src="./images/ajax_logo-75-79.jpg" height="75px" width="78px" alt="AJAX Logo" />
-		<span style="font-weight:bold;">Switch to SOAP Web Service version</span>
-	</a>
-</span>
-&nbsp;&nbsp;&nbsp;
-<span>
-	<a href="index.php?page=user-info-xpath.php">
-		<img src="./images/xml-logo-64-64.png" alt="XML Logo" />
-		<span class="label">Switch to XPath version</span>
-	</a>
-</span>
-
 <form 	action="./index.php?page=user-info.php"
 		method="<?php echo $lFormMethod; ?>" 
 		enctype="application/x-www-form-urlencoded"
 		onsubmit="return onSubmitOfForm(this);"
 >
+	<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>" />
+
 	<input type="hidden" name="page" value="user-info.php" />
 	<table>
 		<tr id="id-bad-cred-tr" style="display: none;">
@@ -148,24 +144,12 @@
 				<input name="user-info-php-submit-button" class="button" type="submit" value="View Account Details" />
 			</td>
 		</tr>
-		<tr><td></td></tr>
-		<tr>
-			<td colspan="2" style="text-align:center; font-style: italic;">
-				Dont have an account? <a href="?page=register.php">Please register here</a>
-			</td>
-		</tr>
 	</table>
 </form>
 
 <?php
 	if ($lFormSubmitted){
 		try {
-			try {
-				$LogHandler->writeToLog("Recieved request to display user information for: " . $lUsername);                    
-			} catch (Exception $e) {
-				//do nothing
-			}// end try
-    			
 			$lQueryResult = $SQLQueryHandler->getUserAccount($lUsername, $lPassword);
     		
    			$lResultsFound = false;
@@ -175,10 +159,9 @@
 				$lRecordsFound = $lQueryResult->num_rows;
 			}//end if
 
-    		/* Print out table header */
 			if($lEncodeOutput){
 				$lUsername = $Encoder->encodeForHTML($lUsername);
-			}// end if
+			}
 
 			echo '<div class="report-header">
 					Results for &quot;<span style="color:#770000;">'
@@ -186,50 +169,31 @@
 					'</span>&quot;. '.$lRecordsFound.' records found.
 				</div>';
 
-    		/* Print out results */
 			if ($lResultsFound){
 			    while($row = $lQueryResult->fetch_object()){
-			    	try {
-						$LogHandler->writeToLog("user-info.php: Displayed user-information for: " . $row->username);
-			    	} catch (Exception $e) {
-			    		// do nothing
-			    	}//end try
-
 					if (!$lEncodeOutput) {
 						$lUsername = $row->username;
-						$lPassword = !$lProtectAgainstPasswordLeakage ? $row->password : '';
-						$lSignature = $row->mysignature;
 						$lFirstName = $row->firstname;
 						$lLastName = $row->lastname;
-						$lClientSecret = $row->client_secret;
-						$lClientID = $row->client_id;
 					} else {
 						$lUsername = $Encoder->encodeForHTML($row->username);
-						$lPassword = !$lProtectAgainstPasswordLeakage ? $Encoder->encodeForHTML($row->password) : '';
-						$lSignature = $Encoder->encodeForHTML($row->mysignature);
 						$lFirstName = $Encoder->encodeForHTML($row->firstname);
 						$lLastName = $Encoder->encodeForHTML($row->lastname);
-						$lClientSecret = $Encoder->encodeForHTML($row->client_secret);
-						$lClientID = $Encoder->encodeForHTML($row->client_id);
 					}
 					
 					echo "<br/>";
 					echo "<span class=\"label\">First Name:&nbsp;</span><span>{$lFirstName}</span><br/>";
 					echo "<span class=\"label\">Last Name:&nbsp;</span><span>{$lLastName}</span><br/>";
 					echo "<span class=\"label\">Username:&nbsp;</span><span>{$lUsername}</span><br/>";
-					echo "<span class=\"label\">Password:&nbsp;</span><span>{$lPassword}</span><br/>";
-					echo "<span class=\"label\">Signature:&nbsp;</span><span>{$lSignature}</span><br/>";
-					echo "<span class=\"label\">Client ID:&nbsp;</span><span>{$lClientID}</span><br/>";
-					echo "<span class=\"label\">Client Secret:&nbsp;</span><span>{$lClientSecret}</span><br/>";
 					echo "<br/>";
-				}// end while
-	
+				}
 			} else {
 				echo '<script>document.getElementById("id-bad-cred-tr").style.display=""</script>';
-			}// end if ($lResultsFound)
+			}
     	} catch (Exception $e) {
 			echo $CustomErrorHandler->FormatError($e, "Error attempting to display user information");
-       	}// end try;
-		
-	}// end if (isset($_POST))
+       	}
+	}
 ?>
+
+
