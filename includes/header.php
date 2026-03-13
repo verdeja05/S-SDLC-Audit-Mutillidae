@@ -82,7 +82,8 @@
 	<link rel="stylesheet" type="text/css" href="javascript/jQuery/colorbox/colorbox.css" />
 	<link rel="stylesheet" type="text/css" href="styles/gritter/jquery.gritter.css" />
 
-	<script src="javascript/jQuery/jquery.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	
 	<script src="javascript/jQuery/colorbox/jquery.colorbox-min.js"></script>
 	<script src="javascript/ddsmoothmenu/ddsmoothmenu.js"></script>
 	<script src="javascript/gritter/jquery.gritter.min.js"></script>
@@ -183,4 +184,3 @@
 			<div>&nbsp;</div>
 		</td>
 		<td class="main-table-frame-right">
-			<!-- Begin Content -->
