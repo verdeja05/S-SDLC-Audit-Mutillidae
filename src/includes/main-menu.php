@@ -1,7 +1,15 @@
 <?php
+/*
 	$lUserIDString = "";
 	if(isset($_SESSION["user_is_logged_in"]) && $_SESSION["user_is_logged_in"]){
 	    $lUserIDString = "&uid=" . $lUserID;
+	}
+*/
+
+$lUserIDString = "";
+	if(isset($_SESSION["user_is_logged_in"]) && $_SESSION["user_is_logged_in"]){
+	    // Se elimina la concatenación del UID para proteger la privacidad en la URL
+	    $lUserIDString = ""; 
 	} //end if
 ?>
 
